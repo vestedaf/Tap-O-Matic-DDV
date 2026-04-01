@@ -44,6 +44,11 @@ jobs:
         if: failure()
         shell: bash
         run: |
+          error_line="$(grep -m 1 -E 'fatal error:|error:|undefined reference|collect2:|ld returned' build.log || true)"
+          if [ -z "$error_line" ]; then
+            error_line="$(tail -n 1 build.log)"
+          fi
+          echo "::error title=Firmware build failure::$error_line"
           {
             echo '## Firmware build failure'
             echo
