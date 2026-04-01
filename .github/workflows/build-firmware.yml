@@ -9,8 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout firmware repo
@@ -34,31 +32,11 @@ jobs:
         run: make -C ../DaisyExamples/DaisySP
 
       - name: Build Tap-O-Matic firmware
-        shell: bash
         run: |
-          set -o pipefail
-          make clean 2>&1 | tee build.log
-          make 2>&1 | tee -a build.log
-
-      - name: Publish failure summary
-        if: failure()
-        shell: bash
-        run: |
-          error_line="$(grep -m 1 -E 'fatal error:|undefined reference|cannot find|No such file or directory|multiple definition|region .+ overflowed|collect2:|error: ld returned|ld: error:' build.log || true)"
-          if [ -z "$error_line" ]; then
-            error_line="$(tail -n 8 build.log | tr '\n' ' ' | sed 's/[[:space:]]\+/ /g')"
-          fi
-          echo "::error title=Firmware build failure::$error_line"
-          {
-            echo '## Firmware build failure'
-            echo
-            echo '```text'
-            tail -n 200 build.log
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          make clean
+          make
 
       - name: Upload firmware artifacts
-        if: always()
         uses: actions/upload-artifact@v5
         with:
           name: tap-o-matic-firmware
@@ -66,4 +44,3 @@ jobs:
             build/*.bin
             build/*.elf
             build/*.map
-            build.log
