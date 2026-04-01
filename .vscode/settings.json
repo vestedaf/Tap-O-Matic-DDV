@@ -2,7 +2,7 @@
     "makefile.launchConfigurations": [
         {
             "cwd": "/Users/jonask/Music/Daisy/Projects/tap-o-matic/DDV/build",
-            "binaryPath": "/Users/jonask/Music/Daisy/Projects/tap-o-matic/DDV/build/TapOMatic.elf",
+            "binaryPath": "/Users/jonask/Music/Daisy/Projects/tap-o-matic/DDV/build/Dub-O-Matic.elf",
             "binaryArgs": []
         }
     ],

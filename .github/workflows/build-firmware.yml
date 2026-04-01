@@ -1,4 +1,4 @@
-name: Build Daisy Firmware
+name: Build Dub-O-Matic Firmware
 
 on:
   workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
       - name: Build DaisySP
         run: make -C ../DaisyExamples/DaisySP
 
-      - name: Build Tap-O-Matic firmware
+      - name: Build Dub-O-Matic firmware
         run: |
           make clean
           make
@@ -39,7 +39,7 @@ jobs:
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: tap-o-matic-firmware
+          name: dub-o-matic-firmware
           path: |
             build/*.bin
             build/*.elf

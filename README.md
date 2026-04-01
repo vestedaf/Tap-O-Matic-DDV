@@ -1,8 +1,8 @@
-# Tap-O-Matic DDV
+# Dub-O-Matic DDV
 
 The Olivia Artz Modular Time Machine, version by Harry Richardson, modified by Blue Nautilus and the DivKid Discord, and finally tweaked heavily by Eris Fairbanks. We've come full circle folks!
 
-This version modifies the [Tap-O-Matic version](https://github.com/cormallen/tap-o-matic) by HR in two ways:
+Dub-O-Matic is this project's current firmware/build identity, built on top of the [Tap-O-Matic version](https://github.com/cormallen/tap-o-matic) by HR and originally modified in two hardware-oriented ways:
 <ul>
 <li>It moves the pan pots down by 2mm. This makes the build much easier since the pan pots don't butt up against the sliders.</li>
 <li>It moves the power header on the back so that it doesn't interfere with one of the jacks. This means you don't have to shave plastic off the jack.</li>

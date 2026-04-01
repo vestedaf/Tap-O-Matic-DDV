@@ -2,7 +2,7 @@
     "configurations": [
         {
             "cwd": "${workspaceFolder}",
-            "executable": "./bin/TapOMatic.elf",
+            "executable": "./bin/Dub-O-Matic.elf",
             "name": "Debug with ST-Link",
             "request": "launch",
             "type": "cortex-debug",
@@ -24,7 +24,7 @@
           "-d",
           "${workspaceRoot}"
         ],
-        "executable": "${workspaceRoot}/build/TapOMatic.elf",
+        "executable": "${workspaceRoot}/build/Dub-O-Matic.elf",
         "interface": "swd",
         "name": "Cortex Debug",
         "openOCDLaunchCommands": [
