@@ -40,9 +40,21 @@ jobs:
           make clean 2>&1 | tee build.log
           make 2>&1 | tee -a build.log
 
+      - name: Publish failure summary
+        if: failure()
+        shell: bash
+        run: |
+          {
+            echo '## Firmware build failure'
+            echo
+            echo '```text'
+            tail -n 200 build.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload firmware artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: tap-o-matic-firmware
           path: |
