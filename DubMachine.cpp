@@ -1,7 +1,7 @@
 #include "daisy_patch_sm.h"
 #include "daisysp.h"
 #include "dsp.h"
-#include "time_machine_hardware.h"
+#include "dub_machine_hardware.h"
 #include "constants.h"
 
 using namespace daisy;
@@ -11,7 +11,7 @@ using namespace std;
 
 #define N_TAPS 9
 #define TIME_SECONDS 150
-#define CALIBRATION_SAMPLES 100
+#define CALIBRATION_SAMPLES 128
 #define BUFFER_WIGGLE_ROOM_SAMPLES 1000
 
 // #define LOGGING_ENABLED
@@ -252,16 +252,19 @@ void audioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out, s
 	// Then we can use those values when updating our handlers.
 	updateControlHandlers();
 
-	// Set LEDs based on loudness for all 9 taps
-	// Tap 0 = dry (input), Taps 1-8 = delay taps
+	// ToM callback cadence/order: update delay tap LEDs first (1-8), then dry (0).
 	if (setLeds)
 	{
-		for (int i = 0; i < N_TAPS; i++)
+		for (int i = 1; i < N_TAPS; i++)
 		{
-			float loudness = timeMachine.GetTapLoudness(i);
+			float loudness = timeMachine.GetTapLoudnessLegacy(i);
 			leds[i].Set(loudness);
 			leds[i].Update();
 		}
+
+		float dryLoudness = timeMachine.GetTapLoudnessLegacy(0);
+		leds[0].Set(dryLoudness);
+		leds[0].Update();
 	}
 
 	// Set global time machine parameters (feedback, BPF, reverb, modes)
@@ -419,8 +422,8 @@ void calibrate(CvCalibrationData &saved, int ledSeqDelay)
 			saved.levelsCvOffset[j] += hw.GetLevelCV(j);
 		}
 
-		// wait 1ms
-		System::Delay(1);
+		// ToM-compatible cadence: slower LED animation during calibration sampling.
+		System::Delay(10);
 
 		// set LEDs
 		for (int ledIndex = 0; ledIndex < N_TAPS; ledIndex++)
@@ -463,19 +466,7 @@ void calibrate(CvCalibrationData &saved, int ledSeqDelay)
 	if (!valid)
 	{
 		hw.PrintLine("Calibration rejected: offsets out of range");
-		saved.Init();  // Reset to defaults
-
-		// Flash all LEDs to indicate error
-		for (int i = 0; i < 6; i++)
-		{
-			float brightness = (i % 2 == 0) ? 1.0f : 0.0f;
-			for (int j = 0; j < N_TAPS; j++)
-			{
-				leds[j].Set(brightness);
-				leds[j].Update();
-			}
-			System::Delay(200);
-		}
+		saved.Init();
 		return;
 	}
 

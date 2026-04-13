@@ -5,7 +5,7 @@ USE_DAISYSP_LGPL=1
 #DEBUG=1
 
 # Sources
-CPP_SOURCES = time_machine_hardware.cpp TimeMachine.cpp
+CPP_SOURCES = dub_machine_hardware.cpp DubMachine.cpp
 
 # Pulling in float printf support costs several KB of flash.
 # Keep it opt-in so release builds still fit after the reverb addition.

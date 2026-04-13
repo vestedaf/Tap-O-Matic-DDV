@@ -324,7 +324,10 @@ public:
 class StereoTap
 {
 public:
-    LoudnessDetector loudness;  // For LED display (max of L/R)
+    // Keep separate envelopes so LED behavior can match ToM while dynamics can
+    // still use a predictive lookahead signal.
+    LoudnessDetector ledLoudness;
+    LoudnessDetector predictedLoudness;
     float sampleRate;
     int bufferSize;  // Number of stereo pairs (actual buffer is 2x this)
 
@@ -356,7 +359,8 @@ public:
         this->sampleRate = sampleRate;
         this->bufferSize = bufferSize;
         this->delta = constants::CROSSFADE_RATE / sampleRate;
-        loudness.Init(sampleRate);
+        ledLoudness.Init(sampleRate);
+        predictedLoudness.Init(sampleRate);
     }
 
     void Set(float delay, float ampL, float ampR, float blur = 0.0f)
@@ -473,9 +477,12 @@ public:
         // Use target delay position (posB) since that's where we're transitioning to
         float lookaheadPeak = GetLookaheadPeak(buffer, posB, writePos);
 
-        // Track raw tap loudness for LEDs so their behavior matches the original firmware.
+        // ToM-style LED metering: raw tap loudness only, no lookahead.
         float rawCurrent = fmaxf(fabsf(rawL), fabsf(rawR));
-        loudness.Process(rawCurrent, lookaheadPeak);
+        ledLoudness.Process(rawCurrent);
+
+        // Predictive loudness path for dynamics/ceiling control.
+        predictedLoudness.Process(rawCurrent, lookaheadPeak);
     }
 };
 
@@ -761,9 +768,15 @@ public:
         }
         if (tapIndex >= 1 && tapIndex <= 8)
         {
-            return taps[tapIndex].loudness.Get();
+            return taps[tapIndex].ledLoudness.Get();
         }
         return 0.0f;
+    }
+
+    // Legacy-compatible LED path used to preserve ToM metering behavior.
+    float GetTapLoudnessLegacy(int tapIndex)
+    {
+        return GetTapLoudness(tapIndex);
     }
 
     // Get the maximum predicted loudness across all delay taps (for feedback ceiling)
@@ -772,7 +785,7 @@ public:
         float maxLoudness = 0.0f;
         for (int i = 1; i <= 8; i++)
         {
-            float tapLoudness = taps[i].loudness.Get();
+            float tapLoudness = taps[i].predictedLoudness.Get();
             if (tapLoudness > maxLoudness) maxLoudness = tapLoudness;
         }
         return maxLoudness;

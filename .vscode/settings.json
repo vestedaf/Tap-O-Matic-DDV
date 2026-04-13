@@ -96,5 +96,8 @@
         "span": "cpp",
         "valarray": "cpp",
         "codecvt": "cpp"
+    },
+    "chat.tools.terminal.autoApprove": {
+        "git remote": true
     }
 }
