@@ -1,4 +1,4 @@
-name: Build Dub Machine Firmware
+name: Build Firmware
 
 on:
   push:
@@ -41,16 +41,16 @@ jobs:
 
       - name: Collect artifacts
         run: |
-          mkdir -p artifacts/Dub-Machine
-          cp -v build/*.bin artifacts/Dub-Machine/ || true
-          cp -v build/*.elf artifacts/Dub-Machine/ || true
-          cp -v build/*.map artifacts/Dub-Machine/ || true
+          mkdir -p artifacts/Tap-O-Matic
+          cp -v build/*.bin artifacts/Tap-O-Matic/ || true
+          cp -v build/*.elf artifacts/Tap-O-Matic/ || true
+          cp -v build/*.map artifacts/Tap-O-Matic/ || true
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: Dub-Machine
+          name: Tap-O-Matic
           path: |
-            artifacts/Dub-Machine/**/*.bin
-            artifacts/Dub-Machine/**/*.elf
-            artifacts/Dub-Machine/**/*.map
+            artifacts/Tap-O-Matic/**/*.bin
+            artifacts/Tap-O-Matic/**/*.elf
+            artifacts/Tap-O-Matic/**/*.map
