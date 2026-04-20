@@ -191,7 +191,30 @@ void updateControlHandlers()
 
 	lowpass.knob = 1.0f - hw.GetLowpassKnob();
 	lowpass.cv = clamp(hw.GetAdcValue(LOWPASS_CV) - lowpass.cvOffset, -1.0, 1.0);
-	lowpass.value = clamp(lowpass.knobSlew.Process(lowpass.knob) + lowpass.cvSlew.Process(lowpass.cv), 0.0, 1.0);
+
+	// DJ-style bipolar filter macro on LPF control:
+	// left side  -> lowpass sweep
+	// center     -> filter bypass
+	// right side -> highpass sweep
+	float djFilterControl = clamp(lowpass.knobSlew.Process(lowpass.knob) + lowpass.cvSlew.Process(lowpass.cv), 0.0f, 1.0f);
+	const float centerDeadZoneHalf = 0.01f;
+	const float lpOpenPosition = 0.5f - centerDeadZoneHalf;
+	const float hpOpenPosition = 0.5f + centerDeadZoneHalf;
+
+	if (djFilterControl < lpOpenPosition)
+	{
+		float lpStrength = (lpOpenPosition - djFilterControl) / lpOpenPosition;
+		lowpass.value = -clamp(lpStrength, 0.0f, 1.0f);
+	}
+	else if (djFilterControl > hpOpenPosition)
+	{
+		float hpStrength = (djFilterControl - hpOpenPosition) / (1.0f - hpOpenPosition);
+		lowpass.value = clamp(hpStrength, 0.0f, 1.0f);
+	}
+	else
+	{
+		lowpass.value = 0.0f;
+	}
 
 	highpass.knob = 1.0f - hw.GetHighpassKnob();
 	highpass.cv = clamp(hw.GetAdcValue(HIGHPASS_CV) - highpass.cvOffset, -1.0, 1.0);
@@ -253,7 +276,11 @@ void audioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out, s
 	updateControlHandlers();
 
 	// Set global time machine parameters (feedback, filters, modes)
-	timeMachine.Set(feedback.value, highpass.value, lowpass.value, feedbackModeSwitch.Read(), filterPositionSwitch.Read());
+	// lowpass.value is bipolar DJ filter amount: [-1, 1]
+	float djHighpass = std::max(0.0f, lowpass.value);
+	float lowpassCutoffControl = lowpass.value < 0.0f ? (1.0f + lowpass.value) : 1.0f;
+	float highpassCutoffControl = clamp(highpass.value + djHighpass, 0.0f, 1.0f);
+	timeMachine.Set(feedback.value, highpassCutoffControl, lowpassCutoffControl, feedbackModeSwitch.Read(), filterPositionSwitch.Read());
 
 	// Set dry tap (tap 0) with pan
 	float dryPanL, dryPanR;
